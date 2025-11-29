@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
+console.log("App starting...");
+
 interface ErrorBoundaryProps {
   children: React.ReactNode;
 }
@@ -12,6 +14,9 @@ interface ErrorBoundaryState {
 }
 
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  // Explicitly declare props to avoid TypeScript error "Property 'props' does not exist on type 'ErrorBoundary'"
+  declare props: Readonly<ErrorBoundaryProps>;
+
   public state: ErrorBoundaryState = {
     hasError: false,
     error: null
@@ -50,8 +55,11 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
+  console.error("Failed to find root element");
   throw new Error("Could not find root element to mount to");
 }
+
+console.log("Root element found, mounting React...");
 
 const root = ReactDOM.createRoot(rootElement);
 root.render(

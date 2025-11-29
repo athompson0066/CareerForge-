@@ -1,37 +1,8 @@
 import { GoogleGenAI, Type, Chat } from "@google/genai";
 
-// Helper to safely get the API key in various environments
-const getApiKey = (): string => {
-  try {
-    // 1. Try standard process.env (Node/Webpack/Build-time replacement)
-    if (typeof process !== 'undefined' && process.env?.API_KEY) {
-      return process.env.API_KEY;
-    }
-  } catch (e) {
-    // Ignore ReferenceErrors
-  }
-
-  try {
-    // 2. Try Vite-standard import.meta.env (Common in Vercel deployments)
-    // @ts-ignore
-    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_KEY) {
-      // @ts-ignore
-      return import.meta.env.VITE_API_KEY;
-    }
-  } catch (e) {
-    // Ignore
-  }
-
-  return '';
-};
-
-const apiKey = getApiKey();
-
-// CRITICAL FIX: Use a placeholder 'dummy-key' if apiKey is empty.
-// This prevents the GoogleGenAI constructor from throwing an error and crashing
-// the entire app (Blank Screen) during the initial load.
-// API calls will fail gracefully later if the key is invalid, but the UI will render.
-const ai = new GoogleGenAI({ apiKey: apiKey || 'dummy-key-to-prevent-crash' });
+// Strictly follow the guideline: The API key must be obtained exclusively from process.env.API_KEY.
+// Assume process.env.API_KEY is pre-configured and valid.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const modelName = "gemini-2.5-flash";
 
