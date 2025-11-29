@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ResumeData, Experience, Education, Skill, SocialLink, Listing, Testimonial, PortfolioItem, WeddingService, WeddingGalleryItem } from '../types';
-import { Plus, Trash2, ChevronDown, ChevronUp, Wand2, Loader2, Sparkles, Mic, Upload, X, Home, Star, Briefcase, Heart, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp, Wand2, Loader2, Sparkles, Mic, Upload, X, Home, Star, Briefcase, Heart, Image as ImageIcon, Link } from 'lucide-react';
 import * as geminiService from '../services/geminiService';
 
 interface EditorProps {
@@ -249,9 +249,9 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
             {/* Photo Upload */}
             <div className="col-span-2 mb-4">
               <label className="block text-sm font-medium text-slate-700 mb-2">Profile Photo</label>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col md:flex-row md:items-start gap-4">
                 {data.personalInfo.photo && (
-                  <div className="relative w-16 h-16 rounded-full overflow-hidden border border-slate-200 shrink-0">
+                  <div className="relative w-20 h-20 rounded-full overflow-hidden border border-slate-200 shrink-0">
                     <img src={data.personalInfo.photo} alt="Profile" className="w-full h-full object-cover" />
                     <button 
                       onClick={() => updatePersonalInfo('photo', '')}
@@ -262,11 +262,32 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
                     </button>
                   </div>
                 )}
-                <label className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
-                  <Upload size={16} className="text-slate-500" />
-                  <span className="text-sm text-slate-600">Upload Photo</span>
-                  <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                </label>
+                <div className="flex-1 space-y-3">
+                   {/* File Upload */}
+                   <label className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors w-full md:w-auto">
+                      <Upload size={16} className="text-slate-500" />
+                      <span className="text-sm text-slate-600">Upload File</span>
+                      <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                   </label>
+                   
+                   <div className="flex items-center gap-2 text-xs text-slate-400 font-medium uppercase">
+                      <div className="h-[1px] bg-slate-200 flex-1"></div>
+                      <span>OR Paste URL</span>
+                      <div className="h-[1px] bg-slate-200 flex-1"></div>
+                   </div>
+
+                   {/* URL Input */}
+                   <div className="flex items-center gap-2 border border-slate-300 rounded-lg px-2 bg-white focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500">
+                      <Link size={14} className="text-slate-400" />
+                      <input 
+                        type="text" 
+                        placeholder="https://site.com/photo.jpg" 
+                        value={data.personalInfo.photo || ''}
+                        onChange={(e) => updatePersonalInfo('photo', e.target.value)}
+                        className="w-full py-2 text-sm outline-none bg-transparent"
+                      />
+                   </div>
+                </div>
               </div>
             </div>
 
@@ -389,23 +410,32 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
              <h3 className="font-semibold text-slate-700">Gallery Images</h3>
              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                {data.weddingGallery?.map((item) => (
-                 <div key={item.id} className="relative aspect-square bg-slate-100 rounded-lg overflow-hidden border border-slate-200 group">
-                    <img src={item.image || 'https://via.placeholder.com/300'} alt={item.tag} className="w-full h-full object-cover" />
-                    <button onClick={() => removeWeddingGallery(item.id)} className="absolute top-2 right-2 p-1 bg-white/80 rounded-full text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><X size={14} /></button>
-                    <div className="absolute bottom-0 left-0 w-full p-2 bg-black/50">
-                       <input 
-                         type="text" 
-                         value={item.tag} 
-                         onChange={(e) => updateWeddingGallery(item.id, 'tag', e.target.value)}
-                         className="w-full bg-transparent text-white text-xs border-none outline-none placeholder:text-white/50"
-                         placeholder="Tag (e.g. Ceremony)"
-                       />
+                 <div key={item.id} className="group relative bg-slate-100 rounded-lg border border-slate-200 p-2">
+                    <div className="aspect-square bg-slate-200 rounded overflow-hidden mb-2">
+                        <img src={item.image || 'https://via.placeholder.com/300'} alt={item.tag} className="w-full h-full object-cover" />
                     </div>
+                    
+                    <button onClick={() => removeWeddingGallery(item.id)} className="absolute top-1 right-1 p-1 bg-white/80 rounded-full text-red-500 hover:bg-white"><X size={14} /></button>
+                    
+                    <input 
+                      type="text" 
+                      value={item.tag} 
+                      onChange={(e) => updateWeddingGallery(item.id, 'tag', e.target.value)}
+                      className="w-full text-xs p-1 border rounded mb-2"
+                      placeholder="Tag"
+                    />
+                    <input 
+                      type="text"
+                      placeholder="Image URL..."
+                      value={item.image}
+                      onChange={(e) => updateWeddingGallery(item.id, 'image', e.target.value)}
+                      className="w-full text-[10px] p-1 border rounded bg-white text-slate-600 truncate"
+                    />
                  </div>
                ))}
-               <label className="flex flex-col items-center justify-center aspect-square border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-rose-400 hover:bg-rose-50 transition-all text-slate-400 hover:text-rose-500">
+               <label className="flex flex-col items-center justify-center aspect-square border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-rose-400 hover:bg-rose-50 transition-all text-slate-400 hover:text-rose-500 p-2">
                   <ImageIcon size={24} />
-                  <span className="text-xs mt-2 font-medium">Add Photo</span>
+                  <span className="text-xs mt-2 font-medium text-center">Upload or Paste URL</span>
                   <input 
                     type="file" 
                     accept="image/*" 
@@ -444,7 +474,7 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
                        {/* Image Upload */}
                        <div className="col-span-2 md:col-span-1">
                           <label className="block text-xs font-medium text-slate-500 mb-1">Property Image</label>
-                          <div className="h-32 bg-slate-200 rounded-lg overflow-hidden relative group cursor-pointer border-2 border-dashed border-slate-300 hover:border-amber-400 transition-colors">
+                          <div className="h-32 bg-slate-200 rounded-lg overflow-hidden relative group cursor-pointer border-2 border-dashed border-slate-300 hover:border-amber-400 transition-colors mb-2">
                              {listing.image ? (
                                 <img src={listing.image} alt="Property" className="w-full h-full object-cover" />
                              ) : (
@@ -454,6 +484,15 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
                              )}
                              <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleGenericImageUpload((url) => updateListing(listing.id, 'image', url))} />
                           </div>
+                          
+                          {/* URL Input */}
+                          <input 
+                             type="text"
+                             placeholder="Or paste Image URL..."
+                             value={listing.image || ''}
+                             onChange={(e) => updateListing(listing.id, 'image', e.target.value)}
+                             className="w-full p-1.5 text-xs border border-slate-300 rounded"
+                          />
                        </div>
                        
                        <div className="col-span-2 md:col-span-1 space-y-3">
