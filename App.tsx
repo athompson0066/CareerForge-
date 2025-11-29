@@ -35,6 +35,11 @@ const App: React.FC = () => {
 
   return (
     <div className={`min-h-screen bg-slate-100 flex flex-col ${isEmbed ? 'h-screen overflow-hidden bg-white' : ''}`}>
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+
       {/* Navigation / Header - Hidden in Embed Mode */}
       {!isEmbed && (
         <header className="bg-white border-b border-slate-200 sticky top-0 z-30 no-print">
@@ -138,7 +143,7 @@ const App: React.FC = () => {
             )}
 
             {/* Scrollable Web Preview */}
-            <div className="flex-1 overflow-y-auto bg-white scroll-smooth relative">
+            <div className="flex-1 overflow-y-auto bg-white scroll-smooth relative scrollbar-hide">
                <ResumePreview 
                   data={resumeData} 
                   theme={activeTheme} 
