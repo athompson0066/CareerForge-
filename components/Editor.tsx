@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ResumeData, Experience, Education, Skill, SocialLink, Listing, Testimonial, PortfolioItem, WeddingService, WeddingGalleryItem } from '../types';
-import { Plus, Trash2, ChevronDown, ChevronUp, Wand2, Loader2, Sparkles, Mic, Upload, X, Home, Star, Briefcase, Heart, Image as ImageIcon, Link } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp, Wand2, Loader2, Sparkles, X, Home, Star, Briefcase, Heart, Link, ImageIcon } from 'lucide-react';
 import * as geminiService from '../services/geminiService';
 
 interface EditorProps {
@@ -22,29 +22,6 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
       ...data,
       personalInfo: { ...data.personalInfo, [field]: value }
     });
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        updatePersonalInfo('photo', reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Generic image uploader for any field
-  const handleGenericImageUpload = (callback: (url: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        callback(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const handleGenerateSummary = async () => {
@@ -263,17 +240,8 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
                   </div>
                 )}
                 <div className="flex-1 space-y-3">
-                   {/* File Upload */}
-                   <label className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors w-full md:w-auto">
-                      <Upload size={16} className="text-slate-500" />
-                      <span className="text-sm text-slate-600">Upload File</span>
-                      <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                   </label>
-                   
-                   <div className="flex items-center gap-2 text-xs text-slate-400 font-medium uppercase">
-                      <div className="h-[1px] bg-slate-200 flex-1"></div>
-                      <span>OR Paste URL</span>
-                      <div className="h-[1px] bg-slate-200 flex-1"></div>
+                   <div className="flex items-center gap-2 text-xs text-slate-500 font-medium uppercase mb-1">
+                      <span>Image URL</span>
                    </div>
 
                    {/* URL Input */}
@@ -433,19 +401,10 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
                     />
                  </div>
                ))}
-               <label className="flex flex-col items-center justify-center aspect-square border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-rose-400 hover:bg-rose-50 transition-all text-slate-400 hover:text-rose-500 p-2">
+               <button onClick={addWeddingGallery} className="flex flex-col items-center justify-center aspect-square border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-rose-400 hover:bg-rose-50 transition-all text-slate-400 hover:text-rose-500 p-2">
                   <ImageIcon size={24} />
-                  <span className="text-xs mt-2 font-medium text-center">Upload or Paste URL</span>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    className="hidden" 
-                    onChange={handleGenericImageUpload((url) => {
-                      const newItem: WeddingGalleryItem = { id: Date.now().toString(), image: url, tag: 'Wedding' };
-                      onChange({ ...data, weddingGallery: [...(data.weddingGallery || []), newItem] });
-                    })} 
-                  />
-               </label>
+                  <span className="text-xs mt-2 font-medium text-center">Add Image</span>
+               </button>
              </div>
           </div>
         )}
@@ -473,22 +432,21 @@ const Editor: React.FC<EditorProps> = ({ data, onChange }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                        {/* Image Upload */}
                        <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs font-medium text-slate-500 mb-1">Property Image</label>
-                          <div className="h-32 bg-slate-200 rounded-lg overflow-hidden relative group cursor-pointer border-2 border-dashed border-slate-300 hover:border-amber-400 transition-colors mb-2">
+                          <label className="block text-xs font-medium text-slate-500 mb-1">Property Image URL</label>
+                          <div className="h-32 bg-slate-200 rounded-lg overflow-hidden relative mb-2">
                              {listing.image ? (
                                 <img src={listing.image} alt="Property" className="w-full h-full object-cover" />
                              ) : (
                                 <div className="absolute inset-0 flex items-center justify-center text-slate-400">
-                                   <Upload size={24} />
+                                   <ImageIcon size={24} />
                                 </div>
                              )}
-                             <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleGenericImageUpload((url) => updateListing(listing.id, 'image', url))} />
                           </div>
                           
                           {/* URL Input */}
                           <input 
                              type="text"
-                             placeholder="Or paste Image URL..."
+                             placeholder="Paste Image URL..."
                              value={listing.image || ''}
                              onChange={(e) => updateListing(listing.id, 'image', e.target.value)}
                              className="w-full p-1.5 text-xs border border-slate-300 rounded"
