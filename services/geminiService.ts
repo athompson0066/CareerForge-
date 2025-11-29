@@ -1,20 +1,37 @@
 import { GoogleGenAI, Type, Chat } from "@google/genai";
 
-// Helper to safely get the API key in various environments (Browser, Node, etc.)
+// Helper to safely get the API key in various environments
 const getApiKey = (): string => {
   try {
-    // Check if process is defined (Node.js or build-time replacement)
-    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+    // 1. Try standard process.env (Node/Webpack/Build-time replacement)
+    if (typeof process !== 'undefined' && process.env?.API_KEY) {
       return process.env.API_KEY;
     }
   } catch (e) {
-    // Ignore ReferenceErrors if process is not defined
+    // Ignore ReferenceErrors
   }
+
+  try {
+    // 2. Try Vite-standard import.meta.env (Common in Vercel deployments)
+    // @ts-ignore
+    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_KEY) {
+      // @ts-ignore
+      return import.meta.env.VITE_API_KEY;
+    }
+  } catch (e) {
+    // Ignore
+  }
+
   return '';
 };
 
 const apiKey = getApiKey();
-const ai = new GoogleGenAI({ apiKey });
+
+// CRITICAL FIX: Use a placeholder 'dummy-key' if apiKey is empty.
+// This prevents the GoogleGenAI constructor from throwing an error and crashing
+// the entire app (Blank Screen) during the initial load.
+// API calls will fail gracefully later if the key is invalid, but the UI will render.
+const ai = new GoogleGenAI({ apiKey: apiKey || 'dummy-key-to-prevent-crash' });
 
 const modelName = "gemini-2.5-flash";
 
@@ -33,7 +50,7 @@ export const generateSummary = async (jobTitle: string, experience: string, skil
     return response.text || "Could not generate summary.";
   } catch (error) {
     console.error("Gemini API Error:", error);
-    return "Error generating summary. Please try again.";
+    return "Error generating summary. Please check your API Key.";
   }
 };
 
