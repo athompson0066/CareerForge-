@@ -1,6 +1,19 @@
 import { GoogleGenAI, Type, Chat } from "@google/genai";
 
-const apiKey = process.env.API_KEY || '';
+// Helper to safely get the API key in various environments (Browser, Node, etc.)
+const getApiKey = (): string => {
+  try {
+    // Check if process is defined (Node.js or build-time replacement)
+    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+      return process.env.API_KEY;
+    }
+  } catch (e) {
+    // Ignore ReferenceErrors if process is not defined
+  }
+  return '';
+};
+
+const apiKey = getApiKey();
 const ai = new GoogleGenAI({ apiKey });
 
 const modelName = "gemini-2.5-flash";
