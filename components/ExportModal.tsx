@@ -95,8 +95,12 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, data }) => {
   };
 
   const handleCopyIframe = () => {
+    // Append ?embed=true to ensure the iframe loads in embed mode
+    const separator = deployUrl.includes('?') ? '&' : '?';
+    const embedSrc = `${deployUrl}${separator}embed=true`;
+
     const iframeCode = `<iframe 
-  src="${deployUrl}" 
+  src="${embedSrc}" 
   style="width: 100%; height: 100vh; border: none;" 
   allow="microphone; camera; clipboard-write" 
   title="${data.personalInfo.fullName} Portfolio"
@@ -260,7 +264,7 @@ const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, data }) => {
                       <textarea 
                         readOnly 
                         className="w-full h-32 bg-slate-900 text-green-400 text-xs font-mono p-4 rounded-lg outline-none resize-none"
-                        value={`<iframe \n  src="${deployUrl}" \n  style="width: 100%; height: 100vh; border: none;" \n  allow="microphone; camera; clipboard-write" \n  title="Portfolio"\n></iframe>`}
+                        value={`<iframe \n  src="${deployUrl.includes('?') ? deployUrl + '&embed=true' : deployUrl + '?embed=true'}" \n  style="width: 100%; height: 100vh; border: none;" \n  allow="microphone; camera; clipboard-write" \n  title="Portfolio"\n></iframe>`}
                       />
                    </div>
                    <p className="text-xs text-slate-500 mt-2">

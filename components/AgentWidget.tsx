@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ResumeData, ThemeType } from '../types';
-import { MessageSquare, X, Send, Mic, Sparkles, Headphones, Minimize2, Bot, Calendar, Loader2 } from 'lucide-react';
+import { MessageSquare, X, Send, Mic, Sparkles, Headphones, Minimize2, Bot, Calendar, Loader2, AlertCircle } from 'lucide-react';
 import { createChatSession, genAIClient } from '../services/geminiService';
 import { Chat, LiveServerMessage, Modality } from '@google/genai';
 
@@ -79,6 +79,7 @@ const AgentWidget: React.FC<AgentWidgetProps> = ({ resumeData, isOpen, onToggle,
   // Live Voice State
   const [isLiveConnected, setIsLiveConnected] = useState(false);
   const [isLiveConnecting, setIsLiveConnecting] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
   const [volumeLevel, setVolumeLevel] = useState(0); // For visualizer
   
   // Refs for Live API
@@ -215,15 +216,44 @@ const AgentWidget: React.FC<AgentWidgetProps> = ({ resumeData, isOpen, onToggle,
   const startLiveSession = async () => {
     try {
       setIsLiveConnecting(true);
+      setConnectionError(null);
       
+      // 1. Check Media API Availability
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Media Devices API not supported. Voice features require HTTPS or localhost.");
+      }
+
+      // 2. Check for Microphones explicitly
+      // This prevents the "Requested device not found" error from crashing the flow unexpectedly
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const hasMic = devices.some(d => d.kind === 'audioinput');
+        if (!hasMic) {
+           throw new Error("No microphone detected on your device. Please connect a microphone.");
+        }
+      } catch (e: any) {
+        // enumerateDevices might fail or be blocked by privacy settings on some browsers
+        // We log it but proceed to getUserMedia which will trigger the prompt or error
+        console.warn("Could not enumerate devices (privacy restriction):", e);
+        if (e.message && e.message.includes("No microphone detected")) {
+           throw e;
+        }
+      }
+
+      // 3. Setup Audio Contexts
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
       const inputCtx = new AudioContextClass({ sampleRate: 16000 });
       const outputCtx = new AudioContextClass({ sampleRate: 24000 });
       
+      // CRITICAL: Resume contexts which might be suspended by the browser
+      await inputCtx.resume();
+      await outputCtx.resume();
+
       audioContextRef.current = inputCtx;
       outputContextRef.current = outputCtx;
       nextStartTimeRef.current = outputCtx.currentTime;
 
+      // 4. Request Mic Access
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
       let context = `You are ${personaName}, the AI ${personaRole} for ${resumeData.personalInfo.fullName}.`;
@@ -335,16 +365,32 @@ const AgentWidget: React.FC<AgentWidgetProps> = ({ resumeData, isOpen, onToggle,
           onerror: (err) => {
             console.error("Live session error", err);
             stopLiveSession();
+            setConnectionError("Connection interrupted. Please try again.");
           }
         }
       });
       
       currentSessionPromiseRef.current = sessionPromise;
 
-    } catch (e) {
-      console.error("Failed to start live session", e);
+    } catch (e: any) {
+      console.warn("Failed to start live session:", e);
       setIsLiveConnecting(false);
       setIsLiveConnected(false);
+      
+      // Cleanup contexts if they were created
+      audioContextRef.current?.close();
+      outputContextRef.current?.close();
+
+      // Specific Error Handling for User Feedback
+      if (e.name === 'NotFoundError' || e.message?.includes('device not found') || e.message?.includes('No microphone')) {
+        setConnectionError("Microphone not found. Please connect a mic.");
+      } else if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+        setConnectionError("Microphone permission denied. Please allow access.");
+      } else if (e.name === 'NotReadableError') {
+         setConnectionError("Microphone is busy. Close other apps.");
+      } else {
+        setConnectionError("Connection failed. Check your API Key or Network.");
+      }
     }
   };
 
@@ -570,9 +616,12 @@ const AgentWidget: React.FC<AgentWidgetProps> = ({ resumeData, isOpen, onToggle,
                     </div>
                  </>
               ) : (
-                 <div className="text-slate-400">
-                    <p>Connection Lost.</p>
-                    <button onClick={startLiveSession} className="mt-4 px-4 py-2 bg-white text-slate-900 rounded-lg text-sm font-medium">Reconnect</button>
+                 <div className="text-slate-400 flex flex-col items-center max-w-xs">
+                    <AlertCircle size={32} className="text-red-400 mb-2" />
+                    <p className="text-red-400 mb-4 font-medium">{connectionError || "Connection Lost."}</p>
+                    <button onClick={startLiveSession} className="px-6 py-2.5 bg-white text-slate-900 rounded-lg text-sm font-bold hover:bg-slate-100 transition-colors">
+                      Try Again
+                    </button>
                  </div>
               )}
            </div>

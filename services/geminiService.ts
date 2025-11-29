@@ -17,9 +17,12 @@ if (!process.env.API_KEY) {
     if (import.meta && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) {
       // @ts-ignore
       process.env.API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+    } else if (typeof (window as any).process !== 'undefined' && (window as any).process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+       // Also check NEXT_PUBLIC for Vercel/Next.js setups
+       process.env.API_KEY = (window as any).process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     }
   } catch (e) {
-    console.warn("Could not map VITE_GEMINI_API_KEY");
+    console.warn("Could not map VITE_GEMINI_API_KEY or NEXT_PUBLIC_GEMINI_API_KEY");
   }
 }
 // --- ENVIRONMENT SETUP END ---
@@ -48,10 +51,18 @@ try {
       })
     },
     live: {
-      connect: async () => ({
-        sendRealtimeInput: () => {},
-        close: () => {}
-      })
+      connect: async (_model: any, config: any) => {
+         // Simulate an error callback if one is provided, to inform the UI that it failed
+         if (config?.callbacks?.onerror) {
+             setTimeout(() => {
+                 config.callbacks.onerror(new Error("AI Features Disabled: API Key is missing or invalid."));
+             }, 500);
+         }
+         return {
+            sendRealtimeInput: () => {},
+            close: () => {}
+         };
+      }
     }
   } as unknown as GoogleGenAI;
 }
