@@ -9,7 +9,7 @@ export const INITIAL_RESUME_DATA: ResumeData = {
     jobTitle: "Programme Director | Board Chair | Management Consultant",
     website: "www.linkedin.com/in/linda-quaynor",
     summary: "Dynamic and results-driven management consultant with over 20 years of experience in strategy development, financial inclusion, organizational transformation, and advocacy across Nigeria, South Africa, the UK, and Ghana. Proven expertise in leading high-impact projects for financial institutions, regulators, FMCG companies, public sector entities, and development organizations. Adept at engaging stakeholders at Ministerial, Board, and Executive levels to drive innovation and deliver measurable results.",
-    photo: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+    photo: "http://aiolosmedia.42web.io/wp-content/uploads/2025/11/lindas-300x300.jpeg"
   },
   experience: [
     {
