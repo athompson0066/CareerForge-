@@ -1,0 +1,7 @@
+{
+  "name": "CareerForge AI",
+  "description": "An intelligent, forward-thinking resume builder powered by Gemini to help professionals craft standout resumes with AI-generated summaries, bullet point enhancements, and modern designs.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
