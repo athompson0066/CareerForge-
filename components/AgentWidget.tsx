@@ -19,7 +19,7 @@ interface ChatMessage {
   text: string;
 }
 
-const SARAH_IMAGE_URL = "http://aiolosmedia.42web.io/wp-content/uploads/2025/11/lindas-300x300.jpeg";
+const SARAH_IMAGE_URL = "https://t3.ftcdn.net/jpg/05/83/41/98/360_F_583419866_97XPxjHDJkQ2RKMmGWdgrbqJhEZeQb55.jpg";
 const JAMES_IMAGE_URL = "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
 const BELLA_IMAGE_URL = "https://images.unsplash.com/photo-1595956553066-feb431ef8782?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80";
 
